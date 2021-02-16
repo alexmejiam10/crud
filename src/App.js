@@ -6,6 +6,8 @@ import shortid from 'shortid'
 function App() {
   const [task, setTask] = useState("")
   const [tasks, setTasks] = useState([])
+  const [editMode, setEditMode] =useState(false)
+  const [id, setId] =useState("")
 
   const addTask = (e) => {
    e.preventDefault()//prevenir que nos recargue la pagina por el submit
@@ -20,10 +22,27 @@ function App() {
    setTasks([...tasks, newTask])//para aque no muestre solo la ultima sino que la agregue a las que ya teniamos
    setTask("")//poner para poder limpiar campo despues de enviar
   } 
-
+  const saveTask = (e) => {
+    e.preventDefault()//prevenir que nos recargue la pagina por el submit
+    if (isEmpty(task)) {
+      console.log("Task empty")
+      return
+    }
+    
+    const editedTask = tasks.map(item => item.id === id ? {id, name: task} : item) //devielve un item y lo compara con el que devuelve y lo reemplaza por el que el usuario puso
+    setTasks(editedTask)
+    setEditMode(false)
+    setTask("")//poner para poder limpiar campo despues de enviar
+    setId("")
+   } 
   const deleteTask = (id) =>{
    const filteredTasks = tasks.filter(task =>  task.id !== id)
    setTasks(filteredTasks)//settasks es el que me trae todas las tareas
+  }
+   const editTask = (theTask) => {
+    setTask(theTask.name)
+    setEditMode(true)
+    setId(theTask.id)
   }
   return (
     <div className="container mt-5">
@@ -34,7 +53,7 @@ function App() {
         <div className="col-8">
          <h4 className="text-center">Lista de Tareas</h4> 
           {
-            size(tasks) == 0 ?(
+            size(tasks) === 0 ?( //operador unitario, es un condicional de una sola linea
            <h5 className="text-center">Aun no hay tareas programadas</h5>
             ):
             (
@@ -47,12 +66,16 @@ function App() {
 
                   <button 
                     className ="btn btn-danger btn-sm float-right mx-2"
-                    onClick={() => deleteTask(task.id)}//nos sirve para decir que el boton realizo una accion
+                    onClick={() => deleteTask(task)}//nos sirve para decir que el boton realizo una accion
                     >
                     Eliminar
                   </button>
 
-                  <button className ="btn btn-warning btn-sm float-right">Editar</button>
+                  <button className ="btn btn-warning btn-sm float-right"
+                  onClick={() => editTask(task)}
+                  >
+                  Editar
+                  </button>
                 </li>
                 )
                 )
@@ -64,8 +87,8 @@ function App() {
         </div>
 
         <div className="col-4">
-         <h4 className="text-center">Formulario</h4>  
-         <form onSubmit={addTask}>
+         <h4 className="text-center">{ editMode ? "Modificar Tarea" : "Agregar Tarea"}</h4>  
+         <form onSubmit={ editMode ? saveTask : addTask}>
            <input
             type="text"
             className="form-control mb-2"
@@ -74,10 +97,10 @@ function App() {
             value={task} //poner para poder limpiar campo despues de enviar
            />
            <button 
-            className="btn btn-dark btn-block"
+            className={editMode ?"btn btn-warning btn-block" : "btn btn-dark btn-block" }
             type="submit"
             >
-              Agregar
+              {editMode ? "Guardar" : "Agregar"}
             </button>
          </form>
         </div>
