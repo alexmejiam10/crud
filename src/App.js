@@ -8,12 +8,25 @@ function App() {
   const [tasks, setTasks] = useState([])
   const [editMode, setEditMode] =useState(false)
   const [id, setId] =useState("")
+  const [error, setError] = useState(null)
+
+  const validForm =() => {
+    let isValid = true
+    setError(null)
+
+    if (isEmpty(task)) {
+      setError("Debes ingresar una tarea")
+      isValid = false
+      
+    }
+    return isValid
+   }
 
   const addTask = (e) => {
    e.preventDefault()//prevenir que nos recargue la pagina por el submit
-   if (isEmpty(task)) {
-     console.log("Task empty")
-     return
+    
+if (!validForm()){
+      return
    }
     const newTask = {
      id:shortid.generate(),
@@ -24,10 +37,9 @@ function App() {
   } 
   const saveTask = (e) => {
     e.preventDefault()//prevenir que nos recargue la pagina por el submit
-    if (isEmpty(task)) {
-      console.log("Task empty")
+    if (!validForm()){
       return
-    }
+   }
     
     const editedTask = tasks.map(item => item.id === id ? {id, name: task} : item) //devielve un item y lo compara con el que devuelve y lo reemplaza por el que el usuario puso
     setTasks(editedTask)
@@ -47,14 +59,14 @@ function App() {
   return (
     <div className="container mt-5">
 
-      <h1>Tareas</h1>
+      <h1>Tareas</h1>--
       <hr/>
       <div className="row">
         <div className="col-8">
          <h4 className="text-center">Lista de Tareas</h4> 
           {
             size(tasks) === 0 ?( //operador unitario, es un condicional de una sola linea
-           <h5 className="text-center">Aun no hay tareas programadas</h5>
+           <li className="list-group-item">Aun no hay tareas programadas</li>
             ):
             (
             <ul className="list-group">
@@ -89,13 +101,18 @@ function App() {
         <div className="col-4">
          <h4 className="text-center">{ editMode ? "Modificar Tarea" : "Agregar Tarea"}</h4>  
          <form onSubmit={ editMode ? saveTask : addTask}>
+            {
+             Error && <span className="text-danger mb-2">{error}</span>
+            }
            <input
             type="text"
             className="form-control mb-2"
             placeholder="Ingrese la tarea..."
             onChange={(text) => setTask(text.target.value)}
             value={task} //poner para poder limpiar campo despues de enviar
+            
            />
+           
            <button 
             className={editMode ?"btn btn-warning btn-block" : "btn btn-dark btn-block" }
             type="submit"
