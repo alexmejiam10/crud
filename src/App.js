@@ -78,7 +78,7 @@ if (!validForm()){
 
                   <button 
                     className ="btn btn-danger btn-sm float-right mx-2"
-                    onClick={() => deleteTask(task)}//nos sirve para decir que el boton realizo una accion
+                    onClick={() => deleteTask(task.id)}//nos sirve para decir que el boton realizo una accion
                     >
                     Eliminar
                   </button>
