@@ -1,7 +1,6 @@
-
-import React, {useState} from 'react'
-import { isEmpty, size } from 'lodash'
-import shortid from 'shortid'
+import React, {useState, useEffect} from 'react' //el useEffect sirve para cuando ya se carguen todos los datos
+import { isEmpty, result, size } from 'lodash'
+import { addDocument, deleteDocument, getCollection, updateDocument } from './actions'
 
 function App() {
   const [task, setTask] = useState("")
@@ -9,6 +8,17 @@ function App() {
   const [editMode, setEditMode] =useState(false)
   const [id, setId] =useState("")
   const [error, setError] = useState(null)
+  
+   useEffect(() => {
+     (async() => {
+       const result = await getCollection("tasks")
+       if (result.statusResponse) {
+        setTasks(result.data)
+       }
+       
+     })()//el doble parentesis significa metodo asincrono auto ejecutable
+     
+   }, [])
 
   const validForm =() => {
     let isValid = true
@@ -22,32 +32,46 @@ function App() {
     return isValid
    }
 
-  const addTask = (e) => {
+  const addTask = async(e) => {
    e.preventDefault()//prevenir que nos recargue la pagina por el submit
     
 if (!validForm()){
       return
    }
-    const newTask = {
-     id:shortid.generate(),
-      name: task
-   }
-   setTasks([...tasks, newTask])//para aque no muestre solo la ultima sino que la agregue a las que ya teniamos
+ 
+   const result = await addDocument("tasks", { name: task })
+   if (!result.statusResponse) {
+     setError(result.error)
+     return
+   }  
+    setTasks([...tasks, {id: result.data.id, name: task } ])//para aque no muestre solo la ultima sino que la agregue a las que ya teniamos
    setTask("")//poner para poder limpiar campo despues de enviar
   } 
-  const saveTask = (e) => {
+
+  const saveTask = async(e) => {
     e.preventDefault()//prevenir que nos recargue la pagina por el submit
     if (!validForm()){
       return
    }
-    
+   
+   const result = await updateDocument("tasks", id, {name: task})
+   if (!result.statusResponse) {
+     setError(result.Error)
+     return
+   }
     const editedTask = tasks.map(item => item.id === id ? {id, name: task} : item) //devielve un item y lo compara con el que devuelve y lo reemplaza por el que el usuario puso
     setTasks(editedTask)
     setEditMode(false)
     setTask("")//poner para poder limpiar campo despues de enviar
     setId("")
    } 
-  const deleteTask = (id) =>{
+
+  const deleteTask = async(id) =>{
+    const result = await deleteDocument("tasks", id)
+    if (!result.statusResponse) {
+    setError(result.error)
+    return  
+    }
    const filteredTasks = tasks.filter(task =>  task.id !== id)
    setTasks(filteredTasks)//settasks es el que me trae todas las tareas
   }
